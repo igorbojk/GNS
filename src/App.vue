@@ -1,18 +1,20 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <List></List>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import List from './components/list/list.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
-  }
+    List
+  },
+    created(){
+      console.log(this.$store.state.test)
+    }
 }
 </script>
 
