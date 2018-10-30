@@ -15,23 +15,19 @@
         <div class="text-right sum-block">
             Summary: {{currencySum}}
         </div>
+
         <table class="table">
             <thead>
-            <tr>
-                <th scope="col">id</th>
-                <th scope="col">name</th>
-                <th scope="col">location</th>
-                <th scope="col">currency</th>
-            </tr>
+                <tr>
+                    <th scope="col">id</th>
+                    <th scope="col">name</th>
+                    <th scope="col">location</th>
+                    <th scope="col">currency</th>
+                    <th scope="col">actions</th>
+                </tr>
             </thead>
             <tbody>
-            <tr v-for="(item, index) in orderBy(items,selected)" :key="index">
-                <td>{{item.id}}</td>
-                <td>{{item.name}}</td>
-                <td>{{item.location}}</td>
-                <td>{{item.currency}}</td>
-            </tr>
-
+                <list-item v-for="(item, index) in orderBy(items,selected)" :key="index" :item="item"></list-item>
             </tbody>
         </table>
     </div>
@@ -39,9 +35,13 @@
 
 <script>
 
+    import ListItem from '@/components/list-item/list-item.vue';
 
     export default {
         name: "list",
+        components: {
+            ListItem
+        },
         computed: {
             items() {
                 return this.$store.getters.filteredList;
@@ -72,11 +72,12 @@
     }
 </script>
 
-<style scoped >
+<style scoped>
     .search-block {
         padding: 16px;
     }
-    .search-block input[type="text"]{
+
+    .search-block input[type="text"] {
         margin-bottom: 16px;
     }
 

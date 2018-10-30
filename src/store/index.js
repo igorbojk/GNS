@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 Vue.use(Vuex);
-import apiService from '../services/apiService'
+import apiService from '@/services/apiService'
 
 const store = new Vuex.Store({
     state: {
@@ -16,6 +16,12 @@ const store = new Vuex.Store({
         },
         FILTER_LIST: (state, name) => {
             state.filteredList = state.list.filter((elem) => elem.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 );
+        },
+        UPDATE_ITEM: (state, itemId, updatedItem) => {
+            // state.list.find(i => i.id == itemId) = null;
+            // console.log(state.list.find(i => i.id == itemId));
+            // let item = state.list.find(i => i.id == itemId);
+            // item = Object.assign(item, updatedItem);
         }
     },
     getters: {
@@ -36,6 +42,9 @@ const store = new Vuex.Store({
         },
         FILTER_LIST({commit}, name) {
             commit('FILTER_LIST', name);
+        },
+        UPDATE_ITEM({commit}, itemId, updatedItem) {
+            commit('UPDATE_ITEM', itemId);
         }
     }
 });
