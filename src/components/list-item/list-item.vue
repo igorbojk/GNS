@@ -35,6 +35,9 @@
         props: {
             item: {
                 type: Object
+            },
+            onSave: {
+                type: Function
             }
         },
         methods: {
@@ -43,8 +46,12 @@
                 this.mode = 'edit';
             },
             saveItem() {
-                this.$store.dispatch('UPDATE_ITEM', this.editedItem.id, this.editedItem);
+                delete this.editedItem.key;
+                this.$store.dispatch('UPDATE_ITEM', {key: this.item.key, item: this.editedItem});
+                this.$store.dispatch('SET_LIST');
+                this.editedItem = null;
                 this.mode = 'read';
+                this.onSave();
             },
             cancel() {
                 this.editedItem = null;

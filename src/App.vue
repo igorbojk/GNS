@@ -11,6 +11,10 @@ export default {
   name: 'app',
   components: {
     List
+  },
+  created(){
+    // this.$store.dispatch('GET_JSON');
+    // this.$store.dispatch('SET_LIST');
   }
 }
 </script>

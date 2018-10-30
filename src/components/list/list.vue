@@ -26,8 +26,11 @@
                     <th scope="col">actions</th>
                 </tr>
             </thead>
-            <tbody>
-                <list-item v-for="(item, index) in orderBy(items,selected)" :key="index" :item="item"></list-item>
+            <tbody v-if="!isLoadingList">
+                <list-item v-for="(item, index) in orderBy(items,selected)" :key="index" :item="item" :onSave="onSave"></list-item>
+            </tbody>
+            <tbody v-else>
+                LOADING....
             </tbody>
         </table>
     </div>
@@ -48,19 +51,25 @@
             },
             currencySum() {
                 return this.$store.getters.currencySum;
+            },
+            isLoadingList() {
+                return this.$store.getters.isLoadingList;
             }
         },
         created() {
-            this.$store.dispatch('GET_JSON');
+            this.$store.dispatch('SET_LIST');
         },
         methods: {
             filterList() {
-                this.$store.dispatch('FILTER_LIST', this.name);
+                this.$store.dispatch('SET_QUERY', this.name);
+            },
+            onSave(){
+                this.filterList();
             }
         },
         data() {
             return {
-                name: null,
+                name: '',
                 selected: 'name',
                 options: [
                     {text: 'name', value: 'name'},
