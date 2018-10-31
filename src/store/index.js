@@ -3,56 +3,55 @@ import Vuex from 'vuex';
 
 Vue.use(Vuex);
 import apiService from '@/services/apiService'
-import { db } from '../db/db';
+import {db} from '@/db/db';
+
+function uniqueID(){
+    function chr4(){
+        return Math.random().toString(16).slice(-4);
+    }
+    return chr4() + chr4() +
+        '-' + chr4() +
+        '-' + chr4() +
+        '-' + chr4() +
+        '-' + chr4() + chr4() + chr4();
+}
 
 const store = new Vuex.Store({
     state: {
         query: '',
         list: [],
-        filteredList: [],
-        isLoadingList: false
+        singleItem: null
     },
     mutations: {
         SET_LIST: (state, list) => {
             state.list = list;
-            state.isLoadingList = false;
-        },
-        FILTER_LIST: (state, query) => {
-            state.filteredList = state.list.filter((elem) => {
-                if (elem.name.toLowerCase().indexOf(state.query.toLowerCase()) !== -1 ||
-                elem.location.toLowerCase().indexOf(state.query.toLowerCase()) !== -1 ||
-                elem.currency.toString().toLowerCase().indexOf(state.query.toLowerCase()) !== -1) {
-                    return elem;
-                }
-            });
         },
         UPDATE_ITEM: (state, data) => {
             db.ref('items').child(data.key).set(data.item);
         },
-        SET_LOADING_LIST: (state, data) => {
-            state.isLoadingList = data;
+        DELETE_ITEM: (state, key) => {
+            db.ref('items').child(key).remove();
         },
-        SET_QUERY: (state, query) => {
-            state.query = query;
+        SET_SINGLE_ITEM: (state, key) => {
+            db.ref('items').child(key).once('value').then(result => {
+                state.singleItem = result.val();
+            })
+        },
+        REMOVE_SINGLE_ITEM: (state) => {
+            state.singleItem = null;
+        },
+        CREATE_ITEM: (state, item) => {
+            const newItem = Object.assign({}, item);
+            newItem.id = uniqueID();
+            db.ref('items').push(newItem);
         }
     },
     getters: {
-        filteredList: (state) => {
-            return state.filteredList = state.list.filter((elem) => {
-                if (elem.name.toLowerCase().indexOf(state.query.toLowerCase()) !== -1 ||
-                elem.location.toLowerCase().indexOf(state.query.toLowerCase()) !== -1 ||
-                elem.currency.toString().toLowerCase().indexOf(state.query.toLowerCase()) !== -1) {
-                    return elem;
-                }
-            });
+        items: (state) => {
+            return state.list;
         },
-        currencySum: (state) => {
-            return state.filteredList.reduce((a , b) => {
-                return a + b.currency;
-            }, 0)
-        },
-        isLoadingList: (state) => {
-            return state.isLoadingList;
+        singleItem: (state) => {
+            return state.singleItem;
         }
     },
     actions: {
@@ -60,31 +59,39 @@ const store = new Vuex.Store({
             apiService.getJson().then(result => {
                 result.data.forEach(i => {
                     db.ref('items').push(i);
-                })
+                });
+                db.ref('items').once('value').then(result => {
+                    // Костыль, смотри описание в readme.txt пункт 1.
+                    let keys = Object.keys(result.val());
+                    let values = Object.values(result.val());
+                    values.map((element, index) => element.key = keys[index]);
+                    commit('SET_LIST', values);
+                });
             })
         },
         SET_LIST({commit}) {
-            commit('SET_LOADING_LIST', true);
             db.ref('items').once('value').then(result => {
-                // Костыль ибо раньше файербез отдавал массивом а теперь обьектом. 
-                // Если нужно разберусь позже. Для тестовго думаю можно костыльнуть.
-                // Вообще в задании нужно исппользовать vuex + firebase, не совсем понимаю этого.
-                // Не доводилось вместе исспользовать да и примеров совместного 
-                // использования кроме как для логина не видел.
+                // Костыль, смотри описание в readme.txt пункт 1.
                 let keys = Object.keys(result.val());
                 let values = Object.values(result.val());
                 values.map((element, index) => element.key = keys[index]);
                 commit('SET_LIST', values);
             })
         },
-        FILTER_LIST({commit}, name) {
-            commit('FILTER_LIST', name);
-        },
         UPDATE_ITEM({commit}, data) {
             commit('UPDATE_ITEM', data);
         },
-        SET_QUERY({commit}, query){
-            commit('SET_QUERY', query);
+        DELETE_ITEM({commit}, key) {
+            commit('DELETE_ITEM', key);
+        },
+        SET_SINGLE_ITEM({commit}, key) {
+            commit('SET_SINGLE_ITEM', key);
+        },
+        REMOVE_SINGLE_ITEM({commit}) {
+            commit('REMOVE_SINGLE_ITEM');
+        },
+        CREATE_ITEM({commit}, item) {
+            commit('CREATE_ITEM', item);
         }
     }
 });

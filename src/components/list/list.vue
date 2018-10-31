@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="search-block">
-            <input class="form-control" type="text" v-on:keyup="filterList" v-model="name"
+            <input class="form-control" type="text" v-model="query"
                    placeholder="Enter your name">
 
             <b-form-group label="Sort by..." v-if="selected">
@@ -11,6 +11,7 @@
                                     :options="options"
                                     name="radiosBtnDefault"/>
             </b-form-group>
+            <router-link  to="/create" class="btn btn-primary"> Create</router-link>
         </div>
         <div class="text-right sum-block">
             Summary: {{currencySum}}
@@ -27,7 +28,7 @@
                 </tr>
             </thead>
             <tbody v-if="!isLoadingList">
-                <list-item v-for="(item, index) in orderBy(items,selected)" :key="index" :item="item" :onSave="onSave"></list-item>
+                <list-item v-for="(item, index) in orderBy(items,selected)" :key="index" :item="item"></list-item>
             </tbody>
             <tbody v-else>
                 LOADING....
@@ -47,29 +48,35 @@
         },
         computed: {
             items() {
-                return this.$store.getters.filteredList;
+                return this.$store.getters.items.filter((elem) => {
+                    if (!elem.name || !elem.location || !elem.currency) {
+                        console.log(elem.id)
+                    }
+                    if (elem.name.toLowerCase().indexOf(this.query.toLowerCase()) !== -1 ||
+                        elem.location.toLowerCase().indexOf(this.query.toLowerCase()) !== -1 ||
+                        elem.currency.toString().toLowerCase().indexOf(this.query.toLowerCase()) !== -1) {
+                        return elem;
+                    }
+                });;
             },
             currencySum() {
-                return this.$store.getters.currencySum;
+                return this.items.reduce((a , b) => {
+                    return a + b.currency;
+                }, 0);
             },
             isLoadingList() {
-                return this.$store.getters.isLoadingList;
+                return !this.items.length;
             }
         },
         created() {
             this.$store.dispatch('SET_LIST');
         },
         methods: {
-            filterList() {
-                this.$store.dispatch('SET_QUERY', this.name);
-            },
-            onSave(){
-                this.filterList();
-            }
+
         },
         data() {
             return {
-                name: '',
+                query: '',
                 selected: 'name',
                 options: [
                     {text: 'name', value: 'name'},
